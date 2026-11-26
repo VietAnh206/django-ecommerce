@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop Của Vanh</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --text:#1c1f26; --muted:#6b7280; --primary:#e11d48; --border:#e5e7eb; --ok:#15803d; }
+  :root { --surface:#fff; --soft:#eef0f3; }
+  [data-theme="dark"] { color-scheme:dark; --bg:#0f1115; --card:#181b21; --surface:#181b21; --soft:#242832; --text:#e8eaed; --muted:#9aa0a6; --border:#2a2e36; }
+  [data-theme="dark"] .badge.ok { background:#14532d; color:#bbf7d0; }
+  [data-theme="dark"] .badge.wait { background:#78350f; color:#fde68a; }
+  dialog { background:var(--surface); color:var(--text); }
+  .cat-title { color:var(--muted); font-weight:600; letter-spacing:.5px; margin-bottom:10px; }
+  .home-layout { display:grid; grid-template-columns:220px minmax(0,1fr); gap:14px; align-items:start; margin-bottom:18px; }
+  .home-layout > .panel { margin:0; border:0; border-radius:4px; box-shadow:0 2px 8px rgba(15,23,42,.06); }
+  .home-layout .cat-title { display:none; }
+  .home-layout .cats { grid-template-columns:1fr; gap:0; }
+  .home-layout .cat-item { flex-direction:row; justify-content:flex-start; border-radius:0; padding:9px 12px; min-height:42px; text-align:left; }
+  .home-layout .cat-item:hover, .home-layout .cat-item.sel { background:#fff4f1; color:#dc3d24; }
+  .home-layout .cat-ico { width:24px; height:24px; border:0; background:transparent; font-size:16px; flex:0 0 24px; }
+  .home-layout .cat-item.sel .cat-ico { border:0; }
+  .promo-grid { display:grid; grid-template-columns:2fr 1fr; grid-template-rows:130px 130px; gap:10px; }
+  .promo-main { grid-row:1 / 3; }
+  .promo-card { position:relative; overflow:hidden; border-radius:4px; background:#e9edf4; display:flex; align-items:center; justify-content:center; text-align:center; color:#fff; min-height:130px; }
+  .promo-card::before { content:""; position:absolute; inset:0; background:linear-gradient(135deg,rgba(233,48,39,.88),rgba(255,137,61,.58)); }
+  .promo-main::before { background:linear-gradient(125deg,#e52e28 0%,#ef7562 58%,#d52b55 100%); }
+  .promo-card.promo-right::before { background:linear-gradient(135deg,#c4d9ef,#edf1f6 55%,#d8dff0); }
+  .promo-copy { position:relative; z-index:1; padding:16px; }
+  .promo-card.promo-right { color:#173f84; }
+  .promo-copy strong { display:block; font-size:22px; margin-bottom:6px; }
+  .promo-main .promo-copy strong { font-family:Georgia,serif; font-size:32px; }
+  .promo-copy span { display:inline-block; margin-top:8px; background:#fff; color:#e23d24; padding:6px 12px; border-radius:3px; font-weight:700; font-size:12px; }
+  .best-title { color:#ef4b23; background:#fff; border-radius:4px 4px 0 0; margin:0; padding:12px 16px 8px; text-align:center; border-bottom:2px solid #fff0eb; }
+  .best-title::before { content:"🔥 "; }
+  .home-products { background:#fff; border-radius:4px; padding:12px; box-shadow:0 2px 8px rgba(15,23,42,.05); }
+  .home-products .toolbar { padding:4px 0; }
+  .home-products .grid { grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+  .home-products .card { border:0; border-radius:4px; box-shadow:0 1px 6px rgba(15,23,42,.08); }
+  .home-products .thumb { height:150px; }
+  .home-products .price { color:#ed3f23; }
+  .home-products .info button { background:#ed3f23; border-radius:3px; }
+  .promo-bottom { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px; }
+  .promo-bottom .promo-card { min-height:150px; }
+  .promo-bottom .promo-card:first-child::before { background:linear-gradient(135deg,#3d1720,#a54e4c); }
+  .promo-bottom .promo-card:last-child::before { background:linear-gradient(135deg,#9dabc4,#d7e2ef); }
+  @media (max-width:850px) {
+    .home-layout { grid-template-columns:1fr; }
+    .home-layout > .panel { display:none; }
+    .promo-grid { grid-template-columns:1.7fr 1fr; }
+    .home-products .grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  }
+  @media (max-width:560px) {
+    .promo-grid { grid-template-columns:1fr; grid-template-rows:180px 120px 120px; }
+    .promo-main { grid-row:auto; }
+    .promo-bottom { grid-template-columns:1fr; }
+  }
+  .cats { display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:10px; }
+  .cat-item { display:flex; flex-direction:column; align-items:center; gap:8px; padding:10px 4px; border-radius:12px; cursor:pointer; text-align:center; font-size:13px; }
+  .cat-item:hover, .cat-item.sel { background:var(--bg); }
+  .cat-ico { width:64px; height:64px; border-radius:50%; background:var(--soft); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:30px; overflow:hidden; }
+  .cat-item.sel .cat-ico { border-color:var(--primary); }
+  .cat-ico img { width:100%; height:100%; object-fit:cover; }
+  #themeBtn { padding:6px 10px; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, "Segoe UI", Roboto, sans-serif; background:#f4f5f7; color:var(--text); min-height:100vh; display:flex; flex-direction:column; }
+  a { color:inherit; }
+  header { background:linear-gradient(90deg,#ff5a3c,#ed3f23); border-bottom:1px solid #e4472d; position:sticky; top:0; z-index:5; color:#fff; }
+  .bar { max-width:1100px; margin:0 auto; padding:12px 16px; display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+  .logo { font-weight:800; font-size:22px; color:#fff; text-decoration:none; margin-right:auto; letter-spacing:.2px; }
+  nav { display:flex; align-items:center; gap:4px; }
+  nav a { text-decoration:none; padding:8px 10px; border-radius:8px; color:#fff; }
+  nav a.active, nav a:hover { color:#fff; background:rgba(255,255,255,.16); }
+  header button { color:#fff; border-color:rgba(255,255,255,.45); }
+  header #themeBtn, header #cartBtn { background:rgba(255,255,255,.12); }
+  input, select, textarea { padding:8px 10px; border:1px solid var(--border); border-radius:8px; font:inherit; background:var(--surface); color:var(--text); }
+  textarea { width:100%; resize:vertical; }
+  button { padding:8px 14px; border:0; border-radius:8px; background:var(--primary); color:#fff; font:inherit; cursor:pointer; }
+  button.ghost { background:var(--surface); color:var(--text); border:1px solid var(--border); }
+  button.danger { background:var(--surface); color:var(--primary); border:1px solid var(--primary); }
+  button.small { padding:4px 10px; font-size:13px; }
+  .back-button { margin-bottom:12px; display:inline-flex; align-items:center; gap:6px; }
+  button:disabled { opacity:.5; cursor:default; }
+  main { max-width:1180px; margin:0 auto; padding:16px; width:100%; flex:1; }
+  h2 { margin:8px 0 16px; }
+  .toolbar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+  .toolbar input[type=search] { flex:1; min-width:180px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:16px; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; display:flex; flex-direction:column; }
+  .panel { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:16px; }
+  .thumb { height:160px; background:var(--soft); display:flex; align-items:center; justify-content:center; font-size:48px; cursor:pointer; }
+  .thumb img { width:100%; height:100%; object-fit:cover; }
+  .info { padding:12px; display:flex; flex-direction:column; gap:6px; flex:1; }
+  .info .name { cursor:pointer; font-weight:600; }
+  .price { color:var(--primary); font-weight:700; }
+  .old { color:var(--muted); text-decoration:line-through; font-weight:400; margin-left:6px; font-size:13px; }
+  .muted { color:var(--muted); font-size:13px; }
+  .stars { color:#f59e0b; }
+  .info button { margin-top:auto; }
+  .detail { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:24px; }
+  @media (max-width:720px) { .detail { grid-template-columns:1fr; } }
+  .big { height:320px; background:var(--soft); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:72px; overflow:hidden; }
+  .big img { width:100%; height:100%; object-fit:contain; }
+  .thumbs { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+  .thumbs img { width:64px; height:64px; object-fit:cover; border-radius:8px; border:2px solid transparent; cursor:pointer; }
+  .thumbs img.sel { border-color:var(--primary); }
+  .col { display:flex; flex-direction:column; gap:10px; }
+  .inline { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .comment { border-top:1px solid var(--border); padding:10px 0; }
+  .reply { margin-left:28px; border-left:3px solid var(--border); padding-left:12px; }
+  table { width:100%; border-collapse:collapse; }
+  th, td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--border); font-size:14px; }
+  tr.link { cursor:pointer; }
+  tr.link:hover { background:var(--bg); }
+  .badge { padding:2px 8px; border-radius:99px; font-size:12px; background:var(--soft); }
+  .badge.ok { background:#dcfce7; color:var(--ok); }
+  .badge.wait { background:#fef3c7; color:#92400e; }
+  dialog { border:0; border-radius:12px; padding:20px; max-width:480px; width:92%; }
+  dialog::backdrop { background:rgba(0,0,0,.4); }
+  dialog form, .form { display:flex; flex-direction:column; gap:10px; }
+  .row { display:flex; gap:8px; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); }
+  .msg { font-size:13px; color:var(--primary); min-height:18px; }
+  .msg.ok { color:var(--ok); }
+  #toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#111827; color:#fff; padding:10px 18px; border-radius:99px; opacity:0; pointer-events:none; transition:opacity .2s; z-index:20; }
+  #toast.show { opacity:1; }
+  .site-footer { background:var(--surface); border-top:1px solid var(--border); margin-top:32px; padding:24px 16px; font-size:14px; }
+  .footer-inner { max-width:1100px; margin:0 auto; }
+  .site-footer h4 { margin:0 0 12px; }
+  .footer-cats { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px; }
+  .footer-cats a { text-decoration:none; color:var(--muted); }
+  .footer-cats a:hover { color:var(--primary); }
+  .footer-bottom { margin-top:20px; padding-top:16px; border-top:1px solid var(--border); text-align:center; color:var(--muted); font-size:13px; }
+  .footer-bottom a { color:var(--primary); text-decoration:none; margin-right:10px; }
+  .hero { background:linear-gradient(135deg,#e11d48,#be123c); color:#fff; border-radius:12px; padding:40px 24px; margin-bottom:16px; text-align:center; }
+  .hero h1 { margin:0 0 10px; font-size:30px; }
+  .hero p { margin:0 auto; max-width:620px; opacity:.95; line-height:1.6; }
+  .about-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-bottom:16px; }
+  .feature { margin:0; text-align:center; }
+  .feature .ficon { font-size:36px; margin-bottom:8px; }
+  .feature h3 { margin:0 0 6px; font-size:16px; }
+  .feature p { margin:0; line-height:1.5; }
+  .about-text p { line-height:1.7; margin:0 0 10px; }
+  .contact-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+  .auth-page { display:grid; grid-template-columns:1.1fr 1fr; border-radius:12px; overflow:hidden; border:1px solid var(--border); background:var(--surface); margin-top:8px; }
+  .auth-intro { background:linear-gradient(135deg,#e11d48,#be123c); color:#fff; padding:40px 32px; display:flex; flex-direction:column; justify-content:center; gap:16px; }
+  .auth-intro h1 { margin:0; font-size:28px; }
+  .auth-intro p { margin:0; line-height:1.6; opacity:.95; }
+  .auth-intro ul { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px; }
+  .auth-intro li::before { content:"✓ "; font-weight:700; }
+  .auth-by { font-size:13px; opacity:.85; margin-top:8px; }
+  .auth-card { padding:40px 32px; display:flex; flex-direction:column; justify-content:center; }
+  .auth-card h2 { margin:0; }
+  @media (max-width:720px) { .auth-page { grid-template-columns:1fr; } .auth-intro, .auth-card { padding:28px 20px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <a class="logo" href="#/">🛒Shop Vanh</a>
+    <nav>
+      <a href="#/" data-nav="home">Trang chủ</a>
+      <a href="#/orders" data-nav="orders">Đơn hàng</a>
+      <a href="#/profile" data-nav="profile">Tài khoản</a>
+      <button class="ghost" id="themeBtn" title="Đổi nền sáng/tối">🌙</button>
+      <button class="ghost" id="cartBtn">Giỏ hàng (<span id="cartCount">0</span>)</button>
+    <span id="userbox"></span>
+    </nav>
+  </div>
+</header>
+
+<main id="view"></main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <h4>Danh mục mua sắm</h4>
+    <ul class="footer-cats" id="footerCats"></ul>
+    <div class="footer-bottom">
+      <a href="#/about">Giới thiệu</a><br><br>
+      © <span id="footerYear"></span> / Sản phẩm Công ty XYZ. Nhà phân phối chính thức của Shop Vanh.
+    </div>
+  </div>
+</footer>
+
+<div id="toast"></div>
+
+<dialog id="cartDlg">
+  <h3>Giỏ hàng</h3>
+  <div id="cartItems"></div>
+  <p><b>Tổng: <span id="cartTotal">0</span></b></p>
+  <form id="checkoutForm">
+    <input name="receiver_name" placeholder="Tên người nhận" required>
+    <input name="receiver_phone" placeholder="Số điện thoại" required>
+    <input name="receiver_address" placeholder="Địa chỉ" required>
+    <input name="description" placeholder="Ghi chú (không bắt buộc)">
+    <div class="msg" id="cartMsg"></div>
+    <button type="submit" id="checkoutBtn">Đặt hàng</button>
+    <button type="button" class="ghost" data-close>Đóng</button>
+  </form>
+</dialog>
+
+<script>
+const API = "/api/v1/";
+const BASE = API.replace(/api\/v1\/?$/, ""); 
+const $ = (id) => document.getElementById(id);
+const fmt = (n) => Number(n).toLocaleString("vi-VN", { maximumFractionDigits: 0 });
+const fmtDate = (s) => new Date(s).toLocaleString("vi-VN");
+const finalPrice = (p) => p.price * (1 - (p.discount || 0) / 100);
+
+
+function applyTheme(t) {
+  document.documentElement.dataset.theme = t;
+  localStorage.setItem("theme", t);
+  $("themeBtn").textContent = t === "dark" ? "☀️" : "🌙";
+}
+applyTheme(localStorage.getItem("theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+$("themeBtn").onclick = () => applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+
+const CAT_EMOJI = { "rau-cu": "🥕", "trai-cay": "🍎", "do-uong": "🥤", "do-kho": "🌾", "thit-hai-san": "🥩", "sua-trung": "🥛", "banh-keo": "🍪", "gia-vi": "🧂", "dien-thoai": "📱" };
+
+
+let token = localStorage.getItem("token") || "";
+let username = localStorage.getItem("username") || "";
+let userId = Number(localStorage.getItem("userId") || 0);
+let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+let afterLogin = null;
+let returnHash = "#/";
+const productCache = {};
+
+function h(tag, props, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") e.className = v;
+    else if (k.startsWith("on") || ["value", "checked", "disabled", "hidden", "selected"].includes(k)) e[k] = v;
+    else e.setAttribute(k, v);
+  }
+  kids.flat().forEach((c) => { if (c != null && c !== false) e.append(c); });
+  return e;
+}
+function toast(text) {
+  const t = $("toast"); t.textContent = text; t.classList.add("show");
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 2500);
+}
+async function api(path, { method = "GET", body } = {}) {
+  const headers = { "Content-Type": "application/json" };
+  if (token) headers.Authorization = "Bearer " + token;
+  const res = await fetch(API + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  const json = await res.json().catch(() => ({}));
+  if (res.status === 401 && token) { logout(); toast("Phiên đăng nhập đã hết hạn"); }
+  if (!res.ok) throw json;
+  return json;
+}
+const errText = (e) => {
+  const x = e.error || e.detail || e;
+  if (typeof x === "string") return x;
+  return Object.entries(x).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : v}`).join(" | ");
+};
+const stars = (n) => "★".repeat(Math.round(n)) + "☆".repeat(5 - Math.round(n));
+function rating(comments) {
+  const top = (comments || []).filter((c) => !c.parent_id);
+  if (!top.length) return null;
+  return { avg: top.reduce((s, c) => s + c.rating, 0) / top.length, n: top.length };
+}
+function needLogin(cb) { if (token) return true; afterLogin = cb; openAuth(false); return false; }
+
+function logout() {
+  token = ""; username = ""; userId = 0;
+  ["token", "username", "userId"].forEach((k) => localStorage.removeItem(k));
+  renderUser(); route();
+}
+function renderUser() {
+  const box = $("userbox"); box.replaceChildren();
+  if (token) {
+    box.append(h("span", {}, "Xin chào, " + username + " "), h("button", { class: "ghost small", onclick: logout }, "Đăng xuất"));
+  } else {
+    box.append(h("button", { class: "ghost", onclick: () => openAuth(false) }, "Đăng nhập"));
+  }
+}
+function openAuth(reg) {
+  const cur = location.hash || "#/";
+  if (!/^#\/(login|register)/.test(cur)) returnHash = cur;
+  location.hash = reg ? "#/register" : "#/login";
+}
+async function doAuth(name, password, email) {
+  if (email !== null) await api("users/", { method: "POST", body: { username: name, email, password } });
+  const r = await api("jwt/create/", { method: "POST", body: { username: name, password } });
+  token = r.access; username = name;
+  localStorage.setItem("token", token); localStorage.setItem("username", username);
+  const me = await api("users/profile/");
+  userId = me.data.id; localStorage.setItem("userId", userId);
+  renderUser();
+  toast("Đăng nhập thành công");
+  const cb = afterLogin; afterLogin = null;
+  location.hash = returnHash;
+  if (cb) cb();
+}
+
+function saveCart() { localStorage.setItem("cart", JSON.stringify(cart)); renderCart(); }
+function addToCart(p, qty = 1) {
+  const it = cart.find((x) => x.id === p.id);
+  if (it) it.qty += qty; else cart.push({ id: p.id, name: p.name, price: finalPrice(p), qty });
+  saveCart(); toast("Đã thêm vào giỏ hàng");
+}
+function renderCart() {
+  $("cartCount").textContent = cart.reduce((s, x) => s + x.qty, 0);
+  $("cartTotal").textContent = fmt(cart.reduce((s, x) => s + x.price * x.qty, 0));
+  const box = $("cartItems"); box.replaceChildren();
+  if (!cart.length) { box.append("Giỏ hàng trống."); return; }
+  cart.forEach((x, i) => {
+    const qty = h("input", { type: "number", min: 1, value: x.qty, style: "width:64px",
+      onchange: () => { x.qty = Math.max(1, parseInt(qty.value) || 1); saveCart(); } });
+    box.append(h("div", { class: "row" },
+      h("span", {}, x.name + " — " + fmt(x.price)), qty,
+      h("button", { class: "ghost small", onclick: () => { cart.splice(i, 1); saveCart(); } }, "Xóa")));
+  });
+}
+$("cartBtn").onclick = () => { $("cartMsg").textContent = ""; $("cartMsg").className = "msg"; renderCart(); $("cartDlg").showModal(); };
+$("checkoutForm").onsubmit = async (e) => {
+  e.preventDefault();
+  const msg = $("cartMsg"); msg.textContent = ""; msg.className = "msg";
+  if (!cart.length) { msg.textContent = "Giỏ hàng trống."; return; }
+  if (!token) { $("cartDlg").close(); afterLogin = () => $("cartBtn").click(); openAuth(false); return; }
+  const f = Object.fromEntries(new FormData(e.target));
+  $("checkoutBtn").disabled = true;
+  try {
+    const order = await api("orders/", { method: "POST", body: f });
+    const oid = order.data.id;
+    for (const x of cart) await api(`orders/${oid}/detail/`, { method: "POST", body: { product_id: x.id, amount: x.qty } });
+    await api(`orders/${oid}/`, { method: "PUT", body: { is_ordered: true } });
+    const final = await api(`orders/${oid}/`);
+    cart = []; saveCart(); e.target.reset();
+    msg.className = "msg ok";
+    msg.textContent = `Đặt hàng thành công! Mã đơn #${oid}, tổng tiền ${fmt(final.data.total)}.`;
+    route();
+  } catch (err) { msg.textContent = "Đặt hàng thất bại: " + errText(err); }
+  finally { $("checkoutBtn").disabled = false; }
+};
+document.querySelectorAll("[data-close]").forEach((b) => b.onclick = () => b.closest("dialog").close());
+
+const view = $("view");
+const setView = (...nodes) => { view.replaceChildren(...nodes); window.scrollTo(0, 0); };
+const backButton = (label = "← Quay lại", fallback = "#/") =>
+  h("button", { class: "ghost back-button", onclick: () => {
+    if (history.length > 1) history.back();
+    else location.hash = fallback;
+  } }, label);
+
+function productCard(p) {
+  const go = () => { location.hash = "#/product/" + p.id; };
+  const thumb = h("div", { class: "thumb", onclick: go });
+  if (p.thumbnail) thumb.append(h("img", { src: p.thumbnail, alt: p.name, onerror: (ev) => ev.target.replaceWith("📦") }));
+  else thumb.append("📦");
+  const r = rating(p.comments);
+  return h("div", { class: "card" }, thumb,
+    h("div", { class: "info" },
+      h("div", { class: "name", onclick: go }, p.name),
+      h("div", { class: "price" }, fmt(finalPrice(p)), p.discount ? h("span", { class: "old" }, fmt(p.price)) : null),
+      r ? h("div", { class: "stars" }, stars(r.avg), h("span", { class: "muted" }, ` (${r.n})`)) : h("div", { class: "muted" }, "Chưa có đánh giá"),
+      h("div", { class: "muted" }, "Còn " + p.amount + " " + p.unit),
+      h("button", { disabled: p.amount <= 0, onclick: () => addToCart(p) }, p.amount > 0 ? "Thêm vào giỏ" : "Hết hàng")));
+}
+
+async function homeView(presetCat = "") {
+  const search = h("input", { type: "search", placeholder: "Tìm sản phẩm..." });
+  const cat = h("select", {}, h("option", { value: "" }, "Tất cả danh mục"));
+  const sort = h("select", {},
+    h("option", { value: "" }, "Mới nhất"), h("option", { value: "asc" }, "Giá tăng dần"), h("option", { value: "desc" }, "Giá giảm dần"));
+  const status = h("div", { class: "muted" });
+  const grid = h("div", { class: "grid" });
+  const catGrid = h("div", { class: "cats" });
+  const catBar = h("div", { class: "panel" }, h("div", { class: "cat-title" }, "DANH MỤC"), catGrid);
+  const promo = h("div", { class: "promo-grid" },
+    h("div", { class: "promo-card promo-main" },
+      h("div", { class: "promo-copy" }, h("strong", {}, "ƯU ĐÃI MUA SẮM"), h("div", {}, "Giảm giá sản phẩm hot"), h("span", {}, "Mua ngay"))),
+    h("div", { class: "promo-card promo-right" },
+      h("div", { class: "promo-copy" }, h("strong", {}, "FLASH SALE"), h("div", {}, "Mua 2 giảm thêm"), h("span", {}, "XEM NGAY"))),
+    h("div", { class: "promo-card promo-right" },
+      h("div", { class: "promo-copy" }, h("strong", {}, "HÔM NAY"), h("div", {}, "Freeship đơn ưu đãi"), h("span", {}, "Đặt hàng"))));
+  const bestSection = h("section", {},
+    h("h2", { class: "best-title" }, "Top sản phẩm nổi bật"),
+    h("div", { class: "home-products" }, h("div", { class: "toolbar" }, search, cat, sort), status, grid));
+  const bottomPromo = h("div", { class: "promo-bottom" },
+    h("div", { class: "promo-card" }, h("div", { class: "promo-copy" }, h("strong", {}, "ĐỒNG HỒ CHÍNH HÃNG"), h("div", {}, "Ưu đãi đến 30%"))),
+    h("div", { class: "promo-card" }, h("div", { class: "promo-copy" }, h("strong", {}, "THẾ GIỚI THỜI TRANG"), h("div", {}, "Bộ sưu tập mới nhất"))));
+  setView(h("div", { class: "home-layout" }, catBar, promo), bestSection, bottomPromo);
+
+  const catItem = (name, icon, selected, href) => h("div", { class: "cat-item" + (selected ? " sel" : ""), onclick: () => { location.hash = href; } },
+    h("div", { class: "cat-ico" }, icon), h("div", {}, name));
+  const catsReady = api("category/")
+    .then((r) => {
+      r.data.forEach((c) => cat.append(h("option", { value: c.id }, c.name)));
+      if (presetCat) cat.value = presetCat;
+      const emoji = (c) => CAT_EMOJI[c.slug] || "🛒";
+      catGrid.replaceChildren(
+        catItem("Tất cả", "🛍️", !presetCat, "#/"),
+        ...r.data.map((c) => catItem(c.name,
+          c.icon_url ? h("img", { src: c.icon_url, alt: c.name, onerror: (ev) => ev.target.replaceWith(emoji(c)) }) : emoji(c),
+          String(c.id) === String(presetCat), "#/category/" + c.id)));
+    })
+    .catch(() => {});
+  let items = [];
+  const draw = () => {
+    const list = [...items];
+    if (sort.value) list.sort((a, b) => (sort.value === "asc" ? 1 : -1) * (finalPrice(a) - finalPrice(b)));
+    grid.replaceChildren(...list.map(productCard));
+    status.textContent = list.length ? "" : "Chưa có sản phẩm. Vào /admin/ để thêm category và product.";
+  };
+  const load = async () => {
+    const q = new URLSearchParams();
+    if (search.value.trim()) q.set("search", search.value.trim());
+    if (cat.value) q.set("category", cat.value);
+    status.textContent = "Đang tải...";
+    try { items = (await api("product/?" + q)).data; draw(); }
+    catch (e) { status.textContent = "Không tải được sản phẩm: " + errText(e); }
+  };
+  let timer;
+  search.oninput = () => { clearTimeout(timer); timer = setTimeout(load, 300); };
+  cat.onchange = load; sort.onchange = draw;
+  catsReady.then(load);
+}
+
+async function productView(id) {
+  setView(h("div", { class: "muted" }, "Đang tải..."));
+  let p;
+  try { p = (await api(`product/${id}/`)).data; productCache[id] = p; }
+  catch (e) { setView(backButton("← Về trang chủ", "#/"), h("h2", {}, "Không tìm thấy sản phẩm")); return; }
+
+  const pics = [p.thumbnail, ...p.images.map((i) => i.image_url)].filter(Boolean);
+  const big = h("div", { class: "big" });
+  const thumbs = h("div", { class: "thumbs" });
+  const show = (i) => {
+    big.replaceChildren(pics.length ? h("img", { src: pics[i], alt: p.name }) : "📦");
+    [...thumbs.children].forEach((t, k) => t.classList.toggle("sel", k === i));
+  };
+  pics.forEach((src, i) => thumbs.append(h("img", { src, alt: "", onclick: () => show(i) })));
+  show(0);
+
+  const qty = h("input", { type: "number", min: 1, max: Math.max(p.amount, 1), value: 1, style: "width:80px" });
+  const r = rating(p.comments);
+  const info = h("div", { class: "col" },
+    h("h2", { style: "margin:0" }, p.name),
+    r ? h("div", { class: "stars" }, stars(r.avg), h("span", { class: "muted" }, ` ${r.avg.toFixed(1)} (${r.n} đánh giá)`)) : h("div", { class: "muted" }, "Chưa có đánh giá"),
+    h("div", { class: "price", style: "font-size:24px" }, fmt(finalPrice(p)), p.discount ? h("span", { class: "old" }, fmt(p.price) + " (-" + p.discount + "%)") : null),
+    h("div", { class: "muted" }, `Còn ${p.amount} ${p.unit}`),
+    p.description ? h("p", { style: "white-space:pre-wrap;margin:0" }, p.description) : null,
+    h("div", { class: "inline" }, qty,
+      h("button", { disabled: p.amount <= 0, onclick: () => addToCart(p, Math.max(1, parseInt(qty.value) || 1)) }, p.amount > 0 ? "Thêm vào giỏ" : "Hết hàng")));
+
+  const commentsBox = h("div", {});
+  setView(backButton(),
+    h("div", { class: "panel detail", style: "margin-top:12px" }, h("div", {}, big, thumbs), info),
+    h("div", { class: "panel" }, h("h3", { style: "margin-top:0" }, "Đánh giá & bình luận"), commentForm(p, null), commentsBox));
+  drawComments(p, commentsBox);
+}
+
+
+function commentForm(p, parent, prefill = "") {
+  const text = h("textarea", { rows: parent ? 2 : 3, placeholder: parent ? "Viết trả lời..." : "Chia sẻ cảm nhận của bạn..." });
+  if (prefill) text.value = prefill;
+  const star = h("select", {}, [5, 4, 3, 2, 1].map((n) => h("option", { value: n }, n + " ★")));
+  const msg = h("div", { class: "msg" });
+  const submit = async () => {
+    if (!text.value.trim()) { msg.textContent = "Vui lòng nhập nội dung."; return; }
+    if (!needLogin(() => route())) return;
+    const body = { comment: text.value.trim(), rating: parent ? 5 : Number(star.value) };
+    if (parent) body.parent_id = parent.id;
+    try { await api(`product/${p.id}/comments/`, { method: "POST", body }); toast("Đã gửi bình luận"); productView(p.id); }
+    catch (e) { msg.textContent = errText(e); }
+  };
+  return h("div", { class: "form", style: "margin-bottom:8px" }, text,
+    h("div", { class: "inline" }, parent ? null : star, h("button", { class: parent ? "small" : "", onclick: submit }, parent ? "Trả lời" : "Gửi đánh giá"), msg));
+}
+
+function drawComments(p, box) {
+  const all = p.comments;
+  const top = all.filter((c) => !c.parent_id);
+  if (!top.length) { box.append(h("div", { class: "muted" }, "Chưa có bình luận nào.")); return; }
+  const item = (c, isReply, root) => {
+    const replyBox = h("div", {});
+    const who = c.username || "Người dùng #" + c.user_id;
+    const openReply = () => {
+      const f = commentForm(p, root, isReply ? "@" + who + " " : "");
+      replyBox.replaceChildren(f);
+      const t = f.querySelector("textarea");
+      t.focus(); t.setSelectionRange(t.value.length, t.value.length);
+    };
+    const actions = h("div", { class: "inline" },
+      h("button", { class: "ghost small", onclick: openReply }, "Trả lời"),
+      (c.user_id === userId || false) ? h("button", { class: "danger small", onclick: async () => {
+        if (!confirm("Xóa bình luận này?")) return;
+        try { await api(`product/${p.id}/comments/${c.id}/`, { method: "DELETE" }); productView(p.id); } catch (e) { toast(errText(e)); }
+      } }, "Xóa") : null);
+    return h("div", { class: "comment" + (isReply ? " reply" : "") },
+      h("div", { class: "inline" }, h("b", {}, who),
+        isReply ? null : h("span", { class: "stars" }, stars(c.rating)), h("span", { class: "muted" }, fmtDate(c.created_at))),
+      h("div", { style: "white-space:pre-wrap;margin:4px 0" }, c.comment), actions, replyBox);
+  };
+  top.forEach((c) => {
+    box.append(item(c, false, c));
+    all.filter((x) => x.parent_id === c.id).forEach((x) => box.append(item(x, true, c)));
+  });
+}
+
+function statusBadge(o) {
+  if (o.is_paid) return h("span", { class: "badge ok" }, "Đã thanh toán");
+  if (o.is_ordered) return h("span", { class: "badge wait" }, "Chờ thanh toán");
+  return h("span", { class: "badge" }, "Nháp");
+}
+
+async function ordersView() {
+  if (!token) { setView(h("h2", {}, "Đơn hàng của tôi"), h("p", {}, "Bạn cần đăng nhập để xem đơn hàng."), h("button", { onclick: () => needLogin(route) }, "Đăng nhập")); return; }
+  setView(h("h2", {}, "Đơn hàng của tôi"), h("div", { class: "muted" }, "Đang tải..."));
+  try {
+    const list = (await api("orders/")).data;
+    if (!list.length) { setView(h("h2", {}, "Đơn hàng của tôi"), h("p", { class: "muted" }, "Bạn chưa có đơn hàng nào.")); return; }
+    const rows = list.map((o) => h("tr", { class: "link", onclick: () => { location.hash = "#/orders/" + o.id; } },
+      h("td", {}, "#" + o.id), h("td", {}, fmtDate(o.created_at)), h("td", {}, o.receiver_name),
+      h("td", {}, o.order_details.length + " sản phẩm"), h("td", {}, fmt(o.total)), h("td", {}, statusBadge(o))));
+    setView(h("h2", {}, "Đơn hàng của tôi"), h("div", { class: "panel", style: "overflow-x:auto" },
+      h("table", {}, h("thead", {}, h("tr", {}, ["Mã", "Ngày đặt", "Người nhận", "Số lượng", "Tổng tiền", "Trạng thái"].map((t) => h("th", {}, t)))), h("tbody", {}, rows))));
+  } catch (e) { setView(h("h2", {}, "Đơn hàng của tôi"), h("p", { class: "msg" }, errText(e))); }
+}
+
+async function productName(id) {
+  if (productCache[id]) return productCache[id].name;
+  try { productCache[id] = (await api(`product/${id}/`)).data; return productCache[id].name; }
+  catch (e) { return "Sản phẩm #" + id; }
+}
+
+async function orderDetailView(id) {
+  if (!token) return ordersView();
+  setView(h("div", { class: "muted" }, "Đang tải..."));
+  let o;
+  try { o = (await api(`orders/${id}/`)).data; } catch (e) { setView(backButton("← Danh sách đơn", "#/orders"), h("h2", {}, "Không tìm thấy đơn hàng")); return; }
+  const names = await Promise.all(o.order_details.map((d) => productName(d.product_id)));
+  const rows = o.order_details.map((d, i) => h("tr", {},
+    h("td", {}, names[i]), h("td", {}, fmt(d.price) + (d.discount ? ` (-${d.discount}%)` : "")), h("td", {}, d.amount),
+    h("td", {}, fmt((d.price - d.price * d.discount / 100) * d.amount))));
+  const cancel = !o.is_paid ? h("button", { class: "danger", onclick: async () => {
+    if (!confirm("Hủy đơn hàng này?")) return;
+    try { await api(`orders/${id}/`, { method: "DELETE" }); toast("Đã hủy đơn"); location.hash = "#/orders"; } catch (e) { toast(errText(e)); }
+  } }, "Hủy đơn hàng") : null;
+  setView(backButton("← Danh sách đơn", "#/orders"),
+    h("div", { class: "panel", style: "margin-top:12px" },
+      h("div", { class: "inline", style: "justify-content:space-between" }, h("h2", { style: "margin:0" }, "Đơn hàng #" + o.id), statusBadge(o)),
+      h("p", {}, h("b", {}, o.receiver_name), " · " + o.receiver_phone, h("br"), o.receiver_address,
+        o.description ? h("br") : null, o.description ? "Ghi chú: " + o.description : null, h("br"),
+        h("span", { class: "muted" }, "Đặt lúc " + fmtDate(o.created_at))),
+      h("div", { style: "overflow-x:auto" }, h("table", {}, h("thead", {}, h("tr", {}, ["Sản phẩm", "Đơn giá", "SL", "Thành tiền"].map((t) => h("th", {}, t)))), h("tbody", {}, rows))),
+      h("p", { class: "price", style: "text-align:right;font-size:18px" }, "Tổng: " + fmt(o.total)), cancel));
+}
+
+async function profileView() {
+  if (!token) { setView(h("h2", {}, "Tài khoản"), h("p", {}, "Bạn cần đăng nhập."), h("button", { onclick: () => needLogin(route) }, "Đăng nhập")); return; }
+  setView(h("div", { class: "muted" }, "Đang tải..."));
+  try {
+    const u = (await api("users/profile/")).data;
+    const fields = [["first_name", "Tên"], ["last_name", "Họ"], ["email", "Email"], ["phone", "Số điện thoại"], ["address", "Địa chỉ"]];
+    const inputs = {};
+    const gender = h("select", {}, [["", "— Giới tính —"], ["MALE", "Nam"], ["FEMALE", "Nữ"], ["OTHER", "Khác"]].map(([v, t]) => h("option", { value: v, selected: u.gender === v }, t)));
+    const msg = h("div", { class: "msg" });
+    const form = h("form", { class: "form", style: "max-width:420px", onsubmit: async (e) => {
+      e.preventDefault(); msg.className = "msg"; msg.textContent = "";
+      const body = { gender: gender.value }; fields.forEach(([k]) => { body[k] = inputs[k].value; });
+      try { await api("users/profile/", { method: "PUT", body }); msg.className = "msg ok"; msg.textContent = "Đã lưu thay đổi."; }
+      catch (err) { msg.textContent = errText(err); }
+    } },
+      h("div", { class: "muted" }, "Tên đăng nhập: " + u.username),
+      fields.map(([k, label]) => { inputs[k] = h("input", { value: u[k] || "", placeholder: label, type: k === "email" ? "email" : "text" }); return h("label", { class: "col", style: "gap:4px" }, label, inputs[k]); }),
+      gender, msg, h("button", { type: "submit" }, "Lưu thay đổi"));
+    setView(h("h2", {}, "Tài khoản"), h("div", { class: "panel" }, form));
+  } catch (e) { setView(h("h2", {}, "Tài khoản"), h("p", { class: "msg" }, errText(e))); }
+}
+
+function authPageView(reg) {
+  if (token) { location.hash = "#/"; return; }
+  const msg = h("div", { class: "msg" });
+  const user = h("input", { placeholder: "Tên đăng nhập", required: true, autocomplete: "username" });
+  const email = reg ? h("input", { type: "email", placeholder: "Email", required: true, autocomplete: "email" }) : null;
+  const pass = h("input", { type: "password", placeholder: "Mật khẩu", required: true, autocomplete: reg ? "new-password" : "current-password" });
+  const btn = h("button", { type: "submit" }, reg ? "Đăng ký" : "Đăng nhập");
+
+  const form = h("form", { class: "form", onsubmit: async (e) => {
+    e.preventDefault(); msg.textContent = ""; btn.disabled = true;
+    try { await doAuth(user.value.trim(), pass.value, reg ? email.value.trim() : null); }
+    catch (err) { msg.textContent = errText(err); }
+    finally { btn.disabled = false; }
+  } },
+    h("h2", {}, reg ? "Tạo tài khoản" : "Đăng nhập"),
+    h("div", { class: "muted" }, reg ? "Đăng ký để đặt hàng và theo dõi đơn." : "Đăng nhập để đặt hàng và xem đơn của bạn."),
+    user, email, pass, msg, btn,
+    h("div", { class: "muted", style: "text-align:center" },
+      reg ? "Đã có tài khoản? " : "Chưa có tài khoản? ",
+      h("a", { href: reg ? "#/login" : "#/register", style: "color:var(--primary)" }, reg ? "Đăng nhập" : "Đăng ký")));
+
+  const intro = h("div", { class: "auth-intro" },
+    h("h1", {}, "🛒 Chào mừng đến Shop"),
+    h("p", {}, "Mua thực phẩm trực tuyến nhanh gọn: chọn hàng, đặt hàng và nhận hàng ngay tại nhà."),
+    h("ul", {},
+      h("li", {}, "Nhiều danh mục: rau củ, trái cây, thịt cá, sữa trứng, gia vị..."),
+      h("li", {}, "Giá và mức giảm giá hiển thị rõ ràng"),
+      h("li", {}, "Đặt hàng nhanh, theo dõi trong mục Đơn hàng"),
+      h("li", {}, "Xem và viết đánh giá cho từng sản phẩm")),
+    h("div", { class: "auth-by" }, "Shop Vanh · Công ty XYZ là nhà phân phối"));
+
+  setView(backButton("← Quay lại", "#/"),
+    h("div", { class: "auth-page" }, intro, h("div", { class: "auth-card" }, form)));
+  user.focus();
+}
+
+function aboutView() {
+  const A = {
+    name: "Shop Vanh",
+    distributor: "Công ty XYZ",
+    address: "Địa chỉ cửa hàng : Đà Nẵng, Việt Nam ",
+    phone: "Số điện thoại : 0123456789",
+    email: "Email : info@shopvanh.com",
+    hours: "Giờ làm việc : 8:00 - 21:00",
+  };
+  const feature = (icon, title, text) => h("div", { class: "panel feature" },
+    h("div", { class: "ficon" }, icon), h("h3", {}, title), h("p", { class: "muted" }, text));
+  const li = (label, value) => h("li", {}, h("b", {}, label + ": "), value);
+
+  setView(
+    backButton("← Quay lại", "#/"),
+    h("div", { class: "hero" },
+      h("h1", {}, "Về " + A.name),
+      h("p", {}, "Cửa hàng thực phẩm trực tuyến, mang đến rau củ, trái cây, thịt cá và nhiều mặt hàng thiết yếu cho bữa ăn mỗi ngày của gia đình bạn.")),
+    h("div", { class: "panel about-text" },
+      h("h3", { style: "margin-top:0" }, "Câu chuyện của chúng tôi"),
+      h("p", {}, A.name + " được xây dựng với mong muốn giúp việc mua thực phẩm trở nên đơn giản hơn: chọn hàng, đặt hàng và nhận hàng ngay tại nhà, không cần mất thời gian đi chợ."),
+      h("p", {}, "Chúng tôi chọn lọc sản phẩm theo từng nhóm rõ ràng, ghi rõ giá, mức giảm giá và số lượng tồn kho để bạn dễ so sánh và yên tâm khi mua.")),
+    h("div", { class: "about-grid" },
+      feature("🛒", "Đa dạng danh mục", "Rau củ, trái cây, đồ uống, đồ khô, thịt và hải sản, sữa và trứng, bánh kẹo, gia vị."),
+      feature("🏷️", "Giá rõ ràng", "Hiển thị giá gốc, phần trăm giảm và giá sau giảm ngay trên từng sản phẩm."),
+      feature("⚡", "Đặt hàng dễ dàng", "Thêm vào giỏ, điền thông tin nhận hàng và đặt đơn chỉ trong vài bước."),
+      feature("💬", "Đánh giá từ khách hàng", "Xem nhận xét và số sao của người mua trước để chọn đúng sản phẩm.")),
+    h("div", { class: "panel about-text" },
+      h("h3", { style: "margin-top:0" }, "Nhà phân phối"),
+      h("p", {}, A.distributor + " là nhà phân phối sản phẩm của " + A.name + ".")),
+    h("div", { class: "panel" },
+      h("h3", { style: "margin-top:0" }, "Liên hệ"),
+      h("ul", { class: "contact-list" },
+        li("Địa chỉ", A.address), li("Điện thoại", A.phone), li("Email", A.email), li("Giờ làm việc", A.hours))),
+    h("div", { style: "text-align:center;margin:8px 0 16px" },
+      h("button", { onclick: () => { location.hash = "#/"; } }, "Mua sắm ngay")));
+}
+
+async function renderFooter() {
+  $("footerYear").textContent = new Date().getFullYear();
+  const ul = $("footerCats");
+  try {
+    const list = (await api("category/")).data;
+    ul.replaceChildren(...list.map((c) => h("li", {}, h("a", { href: "#/category/" + c.id }, c.name))));
+  } catch (e) { ul.replaceChildren(h("li", { class: "muted" }, "Đang cập nhật...")); }
+}
+
+function route() {
+  const parts = (location.hash.replace(/^#\/?/, "") || "").split("/");
+  const [page, arg] = parts;
+  const isAuthPage = ["login", "register"].includes(page);
+
+  
+  if (!token && !isAuthPage) {
+    returnHash = location.hash && location.hash !== "#" ? location.hash : "#/";
+    location.hash = "#/login";
+    return;
+  }
+
+  
+  document.querySelector("header").hidden = isAuthPage;
+  document.querySelector(".site-footer").hidden = isAuthPage;
+
+  const navKey = ["orders", "profile", "about"].includes(page) ? page : (isAuthPage ? "" : "home");
+  document.querySelectorAll("nav a").forEach((a) => a.classList.toggle("active", a.dataset.nav === navKey));
+  if (page === "login") return authPageView(false);
+  if (page === "register") return authPageView(true);
+  if (page === "product" && arg) return productView(arg);
+  if (page === "orders") return arg ? orderDetailView(arg) : ordersView();
+  if (page === "profile") return profileView();
+  if (page === "about") return aboutView();
+  if (page === "category" && arg) return homeView(arg);
+  return homeView();
+}
+window.addEventListener("hashchange", route);
+
+renderUser(); renderCart(); renderFooter(); route();
+</script>
+</body>
+</html>
